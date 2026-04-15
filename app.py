@@ -13,48 +13,58 @@ angulo_rad = np.deg2rad(angulo_graus)
 x_val = np.cos(angulo_rad)
 y_val = np.sin(angulo_rad)
 
+# --- Função para formatar radianos proporcional a Pi ---
+def format_rad(rad):
+    frac = rad / np.pi
+    if np.isclose(frac, 0): return "0"
+    common = {
+        0.5: "π/2", 1.0: "π", 1.5: "3π/2", 2.0: "2π", 
+        0.25: "π/4", 0.75: "3π/4", 1.25: "5π/4", 1.75: "7π/4",
+        0.333: "π/3", 0.666: "2π/3", 1.333: "4π/3", 1.666: "5π/3"
+    }
+    for val, label in common.items():
+        if np.isclose(frac, val, atol=0.01): return label
+    return f"{frac:.2f}π"
+
 # --- Criando o Gráfico ---
 fig = go.Figure()
 
-# 1. Círculo Unitário de fundo
+# 1. Círculo Unitário e Eixos
 t = np.linspace(0, 2*np.pi, 200)
 fig.add_trace(go.Scatter(x=np.cos(t), y=np.sin(t), mode='lines', line=dict(color='white', width=1), hoverinfo='skip'))
-
-# 2. Eixos Cartesianos
 fig.add_shape(type="line", x0=-1.5, y0=0, x1=1.5, y1=0, line=dict(color="gray", width=1))
 fig.add_shape(type="line", x0=0, y0=-1.5, x1=0, y1=1.5, line=dict(color="gray", width=1))
 
-# 3. O RAIO (A linha que liga o centro ao ponto)
-fig.add_trace(go.Scatter(
-    x=[0, x_val], 
-    y=[0, y_val], 
-    mode='lines+markers', 
-    line=dict(color='white', width=3),
-    marker=dict(size=[0, 10], color='white'), # Esconde o marcador no (0,0)
-    hoverinfo='skip'
-))
+# 2. Marcadores nos Eixos (-1, -1/2, 1/2, 1)
+marks = [-1, -0.5, 0.5, 1]
+labels = ["-1", "-1/2", "1/2", "1"]
+fig.add_trace(go.Scatter(x=marks, y=[-0.08]*4, text=labels, mode="text", hoverinfo='skip'))
+fig.add_trace(go.Scatter(x=[0.08]*4, y=marks, text=labels, mode="text", hoverinfo='skip'))
 
-# 4. ARCO AMARELO
-if angulo_graus > 0:
+# 3. O RAIO (Linha que liga o centro ao ponto)
+fig.add_trace(go.Scatter(x=[0, x_val], y=[0, y_val], mode='lines', line=dict(color='white', width=3), hoverinfo='skip'))
+
+# 4. ARCO AMARELO (Representação do ângulo α)
+if angulo_graus > 0.5:
     arc_t = np.linspace(0, angulo_rad, 50)
     fig.add_trace(go.Scatter(x=0.2 * np.cos(arc_t), y=0.2 * np.sin(arc_t), mode='lines', line=dict(color='yellow', width=4), hoverinfo='skip'))
 
-# 5. PROJEÇÕES COLORIDAS NOS EIXOS
+# 5. PROJEÇÕES COLORIDAS (Cosseno e Seno)
 fig.add_trace(go.Scatter(x=[0, x_val], y=[0, 0], mode='lines', line=dict(color='skyblue', width=6), name='cos α'))
 fig.add_trace(go.Scatter(x=[0, 0], y=[0, y_val], mode='lines', line=dict(color='tomato', width=6), name='sen α'))
 # Linhas pontilhadas de conexão
 fig.add_trace(go.Scatter(x=[x_val, x_val], y=[0, y_val], mode='lines', line=dict(color='gray', dash='dot', width=1), hoverinfo='skip'))
 fig.add_trace(go.Scatter(x=[0, x_val], y=[y_val, y_val], mode='lines', line=dict(color='gray', dash='dot', width=1), hoverinfo='skip'))
 
-# 6. PONTO VERDE COM JANELA DE DADOS (Hover)
+# 6. PONTO ATIVO COM HOVER (Ponto Verde)
 fig.add_trace(go.Scatter(
     x=[x_val], y=[y_val], 
     mode='markers', 
     marker=dict(size=15, color='springgreen', line=dict(width=2, color='white')),
-    hovertemplate=f"<b>Ângulo:</b> {angulo_graus:.1f}°<br><b>x (cos):</b> {x_val:.4f}<br><b>y (sen):</b> {y_val:.4f}<extra></extra>"
+    hovertemplate=f"<b>α:</b> {angulo_graus:.1f}°<br><b>x:</b> {x_val:.4f}<br><b>y:</b> {y_val:.4f}<extra></extra>"
 ))
 
-# Layout
+# Layout Fixando o Círculo e Cores
 fig.update_layout(
     template="plotly_dark",
     width=None, height=600,
@@ -64,13 +74,16 @@ fig.update_layout(
     hovermode='closest'
 )
 
-# Exibição
+# --- Layout Final: Gráfico e Tabela ---
 col1, col2 = st.columns([2, 1])
+
 with col1:
     st.plotly_chart(fig, use_container_width=True, config={'displayModeBar': False})
 
 with col2:
-    st.subheader("📊 Tabela de Valores")
-    st.write(f"**Graus:** {angulo_graus:.1f}°")
-    st.write(f"**Cosseno (x):** {x_val:.4f}")
-    st.write(f"**Seno (y):** {y_val:.4f}")
+    st.markdown("### 📊 Tabela de Valores")
+    st.markdown("---")
+    st.markdown(f"**α (graus):** `{angulo_graus:.1f}°`")
+    st.markdown(f"**α (radianos):** `{format_rad(angulo_rad)}`")
+    st.markdown(f"<h3 style='color:skyblue;'>x = cos α: {x_val:.4f}</h3>", unsafe_allow_html=True)
+    st.markdown(f"<h3 style='color:tomato;'>y = sen α: {y_val:.4f}</h3>", unsafe_allow_html=True)
