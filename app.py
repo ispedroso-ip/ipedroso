@@ -44,12 +44,23 @@ fig.add_trace(go.Scatter(x=[0, x], y=[y, y], mode='lines', line=dict(color='blue
 fig.add_trace(go.Scatter(x=[0, x], y=[0, y], mode='lines+markers', name='Raio', marker=dict(size=10, color='green')))
 
 # Configurações de layout do gráfico
+# Configurações de layout do gráfico
 fig.update_layout(
-    width=600, height=600,
-    xaxis=dict(range=[-1.2, 1.2], zeroline=False),
-    yaxis=dict(range=[-1.2, 1.2], zeroline=False),
+    width=None, # Permite que ele se ajuste à coluna
+    height=600,
+    xaxis=dict(
+        range=[-1.2, 1.2], 
+        zeroline=False,
+        scaleanchor="y", # ISSO FIXA O CÍRCULO: Trava o eixo X no eixo Y
+        scaleratio=1,    # Garante proporção 1 para 1
+    ),
+    yaxis=dict(
+        range=[-1.2, 1.2], 
+        zeroline=False
+    ),
     showlegend=False,
-    template="plotly_dark"
+    template="plotly_dark",
+    margin=dict(l=20, r=20, t=20, b=20) # Reduz as bordas brancas
 )
 
 # Layout em Colunas (Gráfico à esquerda, Tabela à direita)
