@@ -64,14 +64,34 @@ fig.add_trace(go.Scatter(x=[0, x_val], y=[y_val, y_val], mode='lines', line=dict
 fig.add_trace(go.Scatter(x=[0, x_val], y=[0, 0], mode='lines', line=dict(color='skyblue', width=6), name='cos α'))
 fig.add_trace(go.Scatter(x=[0, 0], y=[0, y_val], mode='lines', line=dict(color='tomato', width=6), name='sen α'))
 
-# 5. Raio e Ponto Verde
-fig.add_trace(go.Scatter(x=[0, x_val], y=[0, y_val], mode='lines', line=dict(color='white', width=3), hoverinfo='skip'))
+# 5. Ponto invisível que segue o mouse (Hover dinâmico)
+# Adicionamos uma "camada" invisível sobre o círculo para capturar o mouse
+fig.add_trace(go.Scatter(
+    x=np.cos(t), y=np.sin(t),
+    mode='lines',
+    line=dict(color='rgba(0,0,0,0)'), # Invisível
+    hoverinfo='x+y',
+    hovertemplate="α: %{text}<br>x: %{x:.3f}<br>y: %{y:.3f}<extra></extra>",
+    text=[f"{(np.degrees(i)):.1f}°" for i in t],
+    showlegend=False
+))
+
+# 6. O Ponto Ativo (Ponto Verde)
 fig.add_trace(go.Scatter(
     x=[x_val], y=[y_val], 
-    mode='markers', 
-    marker=dict(size=15, color='springgreen', line=dict(width=2, color='white')),
-    hovertemplate="x: %{x:.4f}<br>y: %{y:.4f}<extra></extra>"
+    mode='markers+text', 
+    marker=dict(size=18, color='springgreen', line=dict(width=2, color='white')),
+    text=[f"({x_val:.2f}, {y_val:.2f})"],
+    textposition="top right",
+    hoverinfo='skip'
 ))
+
+# Configurações para o mouse "grudar" no gráfico
+fig.update_layout(
+    hovermode='closest', # Faz o hover focar no ponto mais próximo do mouse
+    dragmode=False,      # Desabilita o zoom de caixa para não atrapalhar
+    # ... (restante do layout igual ao anterior)
+)
 
 # Configurações de Layout (Círculo Perfeito)
 fig.update_layout(
